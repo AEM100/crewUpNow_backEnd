@@ -12,10 +12,12 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -24,9 +26,9 @@ public class Evento {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @OneToOne(cascade ={CascadeType.MERGE, CascadeType.REFRESH})
+    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE})
     @JoinColumn(name = "chat_id", referencedColumnName = "id")
-    private Chat chat; // 🔥 El chat grupal de este evento
+    private Chat chat;
 
     // Su Getter y Setter
     public Chat getChat() { return chat; }
@@ -48,14 +50,13 @@ public class Evento {
     @JoinColumn(name = "creador_id")
     private Usuario creador;
 
-    // 2. Modifica la relación con los Asistentes
-    @ManyToMany(fetch = FetchType.EAGER) // 🔥 Cambiado a EAGER
-    @JoinTable(
-            name = "usuario_evento",
-            joinColumns = @JoinColumn(name = "evento_id"),
-            inverseJoinColumns = @JoinColumn(name = "usuario_id")
-    )
-    private Set<Usuario> asistentes;
+    @OneToMany(mappedBy = "evento", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Asistencia> asistencias = new HashSet<>();
+
+    // Getter para contar participantes fácilmente
+    public int getParticipantsCount() {
+        return asistencias.size();
+    }
 
     // Generar Getters, Setters y Constructores
 
@@ -83,8 +84,12 @@ public class Evento {
         return creador;
     }
 
-    public Set<Usuario> getAsistentes() {
-        return asistentes;
+    public Set<Asistencia> getAsistencias() {
+        return asistencias;
+    }
+
+    public void setAsistencias(Set<Asistencia> asistencias) {
+        this.asistencias = asistencias;
     }
 
     public void setId(Integer id) {
@@ -111,7 +116,4 @@ public class Evento {
         this.creador = creador;
     }
 
-    public void setAsistentes(Set<Usuario> asistentes) {
-        this.asistentes = asistentes;
-    }
 }

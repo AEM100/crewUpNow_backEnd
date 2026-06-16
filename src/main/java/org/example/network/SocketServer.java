@@ -1,6 +1,7 @@
 package org.example.network;
 
 import org.example.ClientHandler;
+import org.example.bd.repository.AsistenciaRepository;
 import org.example.bd.repository.ChatRepository;
 import org.example.bd.repository.EventoRepository;
 import org.example.bd.repository.MensajeRepository;
@@ -14,23 +15,26 @@ import java.net.Socket;
 public class SocketServer {
 
     private final UsuarioRepository usuarioRepository;
-    private final  EventoRepository eventoRepository;
+    private final EventoRepository eventoRepository;
     private final ChatRepository chatRepository;
     private final MensajeRepository mensajeRepository;
     private final UsuarioChatRepository usuarioChatRepository;
-    // El constructor ahora recibe el repositorio desde fuera
+    private final AsistenciaRepository asistenciaRepository; // 🔥 1. Declara el campo
+
     public SocketServer(
             UsuarioRepository usuarioRepository,
             EventoRepository eventoRepository,
             ChatRepository chatRepository,
             MensajeRepository mensajeRepository,
-            UsuarioChatRepository usuarioChatRepository
+            UsuarioChatRepository usuarioChatRepository,
+            AsistenciaRepository asistenciaRepository // 🔥 2. Añádelo al constructor
     ) {
         this.usuarioRepository = usuarioRepository;
         this.eventoRepository = eventoRepository;
         this.chatRepository = chatRepository;
         this.mensajeRepository = mensajeRepository;
         this.usuarioChatRepository = usuarioChatRepository;
+        this.asistenciaRepository = asistenciaRepository; // 🔥 3. Asigna el valor
     }
 
     public void start() {
@@ -40,7 +44,8 @@ public class SocketServer {
                 eventoRepository,
                 chatRepository,
                 mensajeRepository,
-                usuarioChatRepository
+                usuarioChatRepository,
+                asistenciaRepository // <--- ESTO ES LO QUE FALTA
         );
         new Thread(() -> {
             try (ServerSocket serverSocket = new ServerSocket(9000)) {

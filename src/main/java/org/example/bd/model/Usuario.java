@@ -3,6 +3,8 @@ package org.example.bd.model;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "usuario")
@@ -17,8 +19,8 @@ public class Usuario {
     @Column(length = 100, unique = true)
     private String email;
 
-    @Column(name = "url_foto", length = 255)
-    private String urlFoto;
+    @Column(name = "foto_base64", columnDefinition = "LONGTEXT")
+    private String fotoBase64;
 
     @Column(length = 255)
     private String contraseña;
@@ -33,7 +35,10 @@ public class Usuario {
     @Column(name = "ultima_conexion")
     private LocalDateTime ultimaConexion;
 
+
     public enum TipoCuenta { privada, publica }
+
+
 
     @Column(length = 255)
     private String bio;
@@ -43,11 +48,17 @@ public class Usuario {
 
     @Column(name = "is_banned")
     private Boolean isBanned = false;
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Asistencia> asistencias = new HashSet<>();
 
+    // Getter y Setter para asistencias
+    public Set<Asistencia> getAsistencias() { return asistencias; }
+    public void setAsistencias(Set<Asistencia> asistencias) { this.asistencias = asistencias; }
     // Sus Getters y Setters
     public Boolean getIsAdmin() { return isAdmin; }
     public void setIsAdmin(Boolean isAdmin) { this.isAdmin = isAdmin; }
-
+    public String getFotoBase64() { return fotoBase64; }
+    public void setFotoBase64(String fotoBase64) { this.fotoBase64 = fotoBase64; }
     public Boolean getIsBanned() { return isBanned; }
     public void setIsBanned(Boolean isBanned) { this.isBanned = isBanned; }
     // 2. Añade sus correspondientes Getter y Setter al final de la clase:
@@ -82,9 +93,6 @@ public class Usuario {
         this.id = id;
     }
 
-    public void setUrlFoto(String urlFoto) {
-        this.urlFoto = urlFoto;
-    }
 
     public void setEmail(String email) {
         this.email = email;

@@ -1,5 +1,6 @@
 package org.example;
 
+import org.example.bd.repository.AsistenciaRepository;
 import org.example.bd.repository.ChatRepository;
 import org.example.bd.repository.EventoRepository;
 import org.example.bd.repository.MensajeRepository;
@@ -24,6 +25,8 @@ public class CrewUpApplication implements CommandLineRunner {
     private MensajeRepository mensajeRepository;
     @Autowired
     private UsuarioChatRepository usuarioChatRepository;
+    @Autowired
+    private AsistenciaRepository asistenciaRepository;
 
     public static void main(String[] args) {
         SpringApplication.run(CrewUpApplication.class, args);
@@ -39,7 +42,8 @@ public class CrewUpApplication implements CommandLineRunner {
                 eventoRepository,
                 chatRepository,
                 mensajeRepository,
-                usuarioChatRepository
+                usuarioChatRepository,
+                asistenciaRepository
         );
 
         // Arrancamos el socket
