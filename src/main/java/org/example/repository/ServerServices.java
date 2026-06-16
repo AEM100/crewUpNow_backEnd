@@ -434,7 +434,7 @@ public class ServerServices {
 
             JsonNode userIdNode = request.path("userId");
             if (userIdNode.isMissingNode() || userIdNode.isNull()) {
-                System.out.println("❌ ERROR: El campo 'userId' no llegó en la petición.");
+                System.out.println(" ERROR: El campo 'userId' no llegó en la petición.");
                 response.put("status", "ERROR");
                 return response;
             }
@@ -459,7 +459,7 @@ public class ServerServices {
                         Evento evento = eventoRepository.findByChatId(chat.getId());
                         chatJson.put("title", (evento != null && evento.getTitulo() != null) ? evento.getTitulo() : "Chat Grupal");
                     } catch (Exception exRepo) {
-                        System.out.println("⚠️ Error buscando evento para el chat " + chat.getId() + ": " + exRepo.getMessage());
+                        System.out.println("Error buscando evento para el chat " + chat.getId() + ": " + exRepo.getMessage());
                         chatJson.put("title", "Chat Grupal");
                     }
                 } else {
