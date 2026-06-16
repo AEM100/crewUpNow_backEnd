@@ -1,7 +1,6 @@
 package org.example.bd.model;
 
 import jakarta.persistence.Embeddable;
-
 import java.io.Serializable;
 import java.util.Objects;
 

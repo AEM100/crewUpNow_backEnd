@@ -10,8 +10,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +35,6 @@ public class Chat {
     private List<Mensaje> mensajes = new ArrayList<>();
     @Column(name = "fecha_creacion")
     private LocalDateTime fechaCreacion;
-
 
 
     public Integer getId() {
