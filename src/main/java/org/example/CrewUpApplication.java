@@ -36,7 +36,6 @@ public class CrewUpApplication implements CommandLineRunner {
     public void run(String... args) throws Exception {
         System.out.println("Iniciando componentes del servidor...");
 
-        //  ahora le pasamos los 5 repositorios inyectados al SocketServer
         SocketServer socketServer = new SocketServer(
                 usuarioRepository,
                 eventoRepository,
@@ -46,7 +45,6 @@ public class CrewUpApplication implements CommandLineRunner {
                 asistenciaRepository
         );
 
-        // Arrancamos el socket
         socketServer.start();
     }
 }

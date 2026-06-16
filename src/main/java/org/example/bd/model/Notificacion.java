@@ -33,5 +33,4 @@ public class Notificacion {
 
     public enum TipoNotificacion { foto, mensaje, video }
 
-    // Generar Getters, Setters y Constructores
 }

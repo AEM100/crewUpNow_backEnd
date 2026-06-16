@@ -42,7 +42,6 @@ public class Mensaje {
 
     public enum TipoMedia { texto, foto, video }
 
-    // Generar Getters, Setters y Constructores
 
     public Integer getId() {
         return id;

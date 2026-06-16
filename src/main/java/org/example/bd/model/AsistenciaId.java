@@ -12,7 +12,6 @@ public class AsistenciaId implements Serializable {
 
     public AsistenciaId() {}
 
-    // 2. CONSTRUCTOR CON ARGUMENTOS (PARA TU LÓGICA DE NEGOCIO)
     public AsistenciaId(Integer eventoId, Integer usuarioId) {
         this.eventoId = eventoId;
         this.usuarioId = usuarioId;

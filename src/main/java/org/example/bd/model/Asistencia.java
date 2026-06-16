@@ -71,5 +71,4 @@ public class Asistencia {
     public void setEstado(String estado) {
         this.estado = estado;
     }
-    // Getters y Setters...
 }

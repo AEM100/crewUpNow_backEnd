@@ -18,9 +18,8 @@ import org.example.bd.repository.ChatRepository;
 import org.example.bd.repository.EventoRepository;
 import org.example.bd.repository.MensajeRepository;
 import org.example.bd.repository.UsuarioChatRepository;
-import org.example.bd.repository.UsuarioRepository; // Tu repositorio real
+import org.example.bd.repository.UsuarioRepository;
 import org.mindrot.jbcrypt.BCrypt;
-
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -34,23 +33,22 @@ public class ServerServices {
     private final ChatRepository chatRepository;
     private final MensajeRepository mensajeRepository;
     private final UsuarioChatRepository usuarioChatRepository;
-    private final AsistenciaRepository asistenciaRepository; // Asegúrate de añadirlo aquí
+    private final AsistenciaRepository asistenciaRepository;
 
-    // Constructor que inyecta todos los repositorios necesarios
     public ServerServices(
             UsuarioRepository usuarioRepository,
             EventoRepository eventoRepository,
             ChatRepository chatRepository,
             MensajeRepository mensajeRepository,
             UsuarioChatRepository usuarioChatRepository,
-            AsistenciaRepository asistenciaRepository // <-- Inclúyelo aquí
+            AsistenciaRepository asistenciaRepository
     ) {
         this.usuarioRepository = usuarioRepository;
         this.eventoRepository = eventoRepository;
         this.chatRepository = chatRepository;
         this.mensajeRepository = mensajeRepository;
         this.usuarioChatRepository = usuarioChatRepository;
-        this.asistenciaRepository = asistenciaRepository; // <-- Y aquí
+        this.asistenciaRepository = asistenciaRepository;
     }
     public JsonNode register(JsonNode request) {
         ObjectNode response = mapper.createObjectNode();
@@ -63,7 +61,6 @@ public class ServerServices {
             nuevoUsuario.setNombre(nombre);
             nuevoUsuario.setEmail(email);
 
-            // Generamos el hash
             String passwordHash = BCrypt.hashpw(passwordPlano, BCrypt.gensalt());
             nuevoUsuario.setContraseña(passwordHash);
 
@@ -111,14 +108,12 @@ public class ServerServices {
 
             Usuario usuario = usuarioOpt.get();
 
-            // 🔥 VALIDACIÓN DE BANEO: Bloqueamos acceso si el usuario está suspendido
             if (usuario.getIsBanned()) {
                 response.put("status", "ERROR");
                 response.put("message", "Tu cuenta ha sido suspendida por un administrador.");
                 return response;
             }
 
-            // Comprobación de seguridad con BCrypt
             if (!BCrypt.checkpw(passwordIntentado, usuario.getContraseña())) {
                 response.put("status", "ERROR");
                 response.put("message", "Contraseña incorrecta.");
@@ -128,7 +123,6 @@ public class ServerServices {
             usuario.setUltimaConexion(LocalDateTime.now());
             usuarioRepository.save(usuario);
 
-            // Respuesta completa
             response.put("status", "SUCCESS");
             response.put("id", usuario.getId());
             response.put("name", usuario.getNombre());
@@ -153,7 +147,6 @@ public class ServerServices {
             Usuario creador = usuarioRepository.findById(userId)
                     .orElseThrow(() -> new Exception("El usuario creador no existe."));
 
-            // 1. Crear el Evento
             Evento evento = new Evento();
             evento.setTitulo(request.get("title").asText());
             evento.setDescripcion(request.get("description").asText());
@@ -161,11 +154,9 @@ public class ServerServices {
             evento.setCreador(creador);
             evento.setFechaEvento(LocalDateTime.parse(request.get("fecha").asText()));
 
-            // No necesitamos inicializar el Set manualmente, JPA lo maneja.
-            // Guardamos primero el evento para obtener su ID necesario para la Asistencia
+
             evento = eventoRepository.save(evento);
 
-            // 2. Registrar al creador como la primera Asistencia
             Asistencia asistenciaCreador = new Asistencia();
             asistenciaCreador.setId(new AsistenciaId(evento.getId(), creador.getId()));
             asistenciaCreador.setEvento(evento);
@@ -173,17 +164,14 @@ public class ServerServices {
             asistenciaCreador.setEstado("aceptado");
             asistenciaRepository.save(asistenciaCreador);
 
-            // 3. Crear el Chat Grupal asociado
             Chat chat = new Chat();
             chat.setTipo(Chat.TipoChat.grupal);
             chat.setFechaCreacion(LocalDateTime.now());
             chat = chatRepository.save(chat);
 
-            // 4. Vincular Chat al Evento y guardar de nuevo
             evento.setChat(chat);
             eventoRepository.save(evento);
 
-            // 5. Crear la membresía del creador en el Chat (UsuarioChat)
             UsuarioChat membresia = new UsuarioChat();
             membresia.setChat(chat);
             membresia.setUsuario(creador);
@@ -205,7 +193,6 @@ public class ServerServices {
     public JsonNode banearUsuario(JsonNode request) {
         ObjectNode response = mapper.createObjectNode();
         try {
-            // 1. Extraemos el ID del usuario que será baneado
             int userIdToBan = request.get("userIdToBan").asInt();
             int adminId = request.get("adminId").asInt();
             Usuario admin = usuarioRepository.findById(adminId).orElse(null);
@@ -215,7 +202,6 @@ public class ServerServices {
                 response.put("message", "No tienes permisos de administrador.");
                 return response;
             }
-            // 2. Buscamos al usuario en la BD
             Optional<Usuario> usuarioOpt = usuarioRepository.findById(userIdToBan);
 
             if (usuarioOpt.isEmpty()) {
@@ -226,7 +212,6 @@ public class ServerServices {
 
             Usuario usuario = usuarioOpt.get();
 
-            // 3. Aplicamos el baneo
             usuario.setIsBanned(true);
             usuarioRepository.save(usuario);
 
@@ -247,12 +232,9 @@ public class ServerServices {
             int userId = request.get("userId").asInt();
             LocalDateTime ahora = LocalDateTime.now();
 
-            // Obtenemos todos los eventos (o idealmente filtra en BD)
             List<Evento> todos = eventoRepository.findAllWithAsistencias();
 
-            // Filtramos usando la nueva relación Asistencia
             List<Evento> misEventos = todos.stream()
-                    // 🔥 CAMBIO: Filtramos accediendo al usuario dentro de la Asistencia
                     .filter(e -> e.getAsistencias().stream()
                             .anyMatch(a -> a.getUsuario().getId() == userId))
                     .filter(e -> e.getFechaEvento().isAfter(ahora))
@@ -269,10 +251,8 @@ public class ServerServices {
                 item.put("ubicacion", e.getUbicacion());
                 item.put("fecha", e.getFechaEvento().toString());
 
-                // Verificación de seguridad para el organizador
                 item.put("organizer", e.getCreador() != null ? e.getCreador().getNombre() : "Desconocido");
 
-                // 🔥 CAMBIO: Usamos la colección de asistencias
                 item.put("participantsCount", e.getAsistencias().size());
 
                 arrayEventos.add(item);
@@ -295,22 +275,15 @@ public class ServerServices {
             int userId = request.get("userId").asInt();
             int eventId = request.get("eventId").asInt();
 
-            // 1. Buscamos el evento y usuario
             Evento evento = eventoRepository.findById(eventId)
                     .orElseThrow(() -> new RuntimeException("Evento no encontrado"));
 
             Usuario usuario = usuarioRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-            // 2. Validación de permisos
             if (usuario.getIsAdmin() || evento.getCreador().getId().equals(userId)) {
 
-                // 🔥 CAMBIO CLAVE: No toques la colección 'asistencias' (no hagas .clear())
-                // Deja que la base de datos maneje el borrado en cascada.
-                // Si intentas hacer .clear(), Hibernate intenta cargar la colección
-                // de la BD y ahí es donde peta por falta de sesión.
 
-                // 3. Ejecución directa del borrado
                 eventoRepository.delete(evento);
                 eventoRepository.flush();
 
@@ -335,24 +308,20 @@ public class ServerServices {
             int eventoId = request.get("eventId").asInt();
             boolean unirse = request.get("join").asBoolean();
 
-            // Buscamos las entidades básicas
             Usuario usuario = usuarioRepository.findById(userId)
                     .orElseThrow(() -> new Exception("Usuario no encontrado"));
             Evento evento = eventoRepository.findById(eventoId)
                     .orElseThrow(() -> new Exception("Evento no encontrado"));
 
             if (unirse) {
-                // Verificar si ya existe la asistencia para no duplicar
                 AsistenciaId id = new AsistenciaId(eventoId, userId);
                 if (!asistenciaRepository.existsById(id)) {
                     Asistencia nuevaAsistencia = new Asistencia();
                     nuevaAsistencia.setId(id);
                     nuevaAsistencia.setEvento(evento);
                     nuevaAsistencia.setUsuario(usuario);
-                    // JPA se encarga de guardar los valores por defecto (fecha, estado)
                     asistenciaRepository.save(nuevaAsistencia);
 
-                    // Lógica de Chat: Unir al usuario al chat del evento
                     if (evento.getChat() != null) {
                         boolean yaEsMiembro = usuarioChatRepository.existsByUsuarioAndChat(usuario, evento.getChat());
                         if (!yaEsMiembro) {
@@ -368,17 +337,14 @@ public class ServerServices {
                 response.put("message", "Te has unido al evento.");
 
             } else {
-                // Desapuntarse
                 if (evento.getCreador().getId() == userId) {
                     response.put("status", "ERROR");
                     response.put("message", "El creador no puede desapuntarse de su propio evento.");
                     return response;
                 }
 
-                // Borrado directo por clave compuesta: ¡Adiós a los errores de sesión!
                 asistenciaRepository.deleteById(new AsistenciaId(eventoId, userId));
 
-                // Eliminar membresía de chat
                 if (evento.getChat() != null) {
                     usuarioChatRepository.deleteByUsuarioAndChat(usuario, evento.getChat());
                 }
@@ -401,8 +367,6 @@ public class ServerServices {
         try {
             int currentUserId = request.has("userId") ? request.get("userId").asInt() : -1;
 
-            // Recuperamos los eventos. Como la relación es @OneToMany,
-            // no hay riesgo de LazyInitializationException si accedemos desde dentro de @Transactional
             List<Evento> eventos = eventoRepository.findAllWithAsistencias();
             ArrayNode arrayEventos = mapper.createArrayNode();
 
@@ -422,10 +386,8 @@ public class ServerServices {
                     item.put("creatorId", 0);
                 }
 
-                // 🔥 CAMBIO: Ahora accedemos a la colección de Asistencia
                 item.put("participantsCount", e.getAsistencias().size());
 
-                // 🔥 CAMBIO: Buscamos al usuario dentro de la colección de asistencias
                 boolean estaApuntado = e.getAsistencias().stream()
                         .anyMatch(a -> a.getUsuario().getId() == currentUserId);
 
@@ -468,10 +430,8 @@ public class ServerServices {
     public JsonNode listarMisChats(JsonNode request) {
         ObjectNode response = mapper.createObjectNode();
         try {
-            // Imprime en consola para comprobar si el JSON llega bien a esta función
             System.out.println("Procesando listarMisChats con JSON: " + request.toString());
 
-            // .path() evita que la app cruja si el campo no viene
             JsonNode userIdNode = request.path("userId");
             if (userIdNode.isMissingNode() || userIdNode.isNull()) {
                 System.out.println("❌ ERROR: El campo 'userId' no llegó en la petición.");
@@ -488,21 +448,19 @@ public class ServerServices {
 
             for (UsuarioChat uc : membresias) {
                 Chat chat = uc.getChat();
-                if (chat == null) continue; // Protección por si hay basura en la BD
+                if (chat == null) continue;
 
                 ObjectNode chatJson = mapper.createObjectNode();
                 chatJson.put("chatId", chat.getId());
 
                 if (chat.getTipo() == Chat.TipoChat.grupal) {
-                    // Buscamos el evento de forma segura.
-                    // Si este repositorio te da error, asegúrate de que en EventoRepository exista:
-                    // Evento findByChat_Id(Long chatId); o como tengas tu relación.
+
                     try {
                         Evento evento = eventoRepository.findByChatId(chat.getId());
                         chatJson.put("title", (evento != null && evento.getTitulo() != null) ? evento.getTitulo() : "Chat Grupal");
                     } catch (Exception exRepo) {
                         System.out.println("⚠️ Error buscando evento para el chat " + chat.getId() + ": " + exRepo.getMessage());
-                        chatJson.put("title", "Chat Grupal"); // Salvavidas si el repositorio falla
+                        chatJson.put("title", "Chat Grupal");
                     }
                 } else {
                     chatJson.put("title", "Chat Individual");
@@ -515,8 +473,7 @@ public class ServerServices {
             response.set("chats", arrayChats);
 
         } catch (Exception e) {
-            // 🔥 CRUCIAL: Esto pintará en la consola de tu Java la línea exacta que está fallando
-            System.out.println("❌ CRASH en listarMisChats:");
+            System.out.println(" CRASH en listarMisChats:");
             e.printStackTrace();
             response.put("status", "ERROR");
         }
@@ -527,7 +484,6 @@ public class ServerServices {
         ObjectNode response = mapper.createObjectNode();
         try {
             int chatId = request.get("chatId").asInt();
-            // 1. Buscamos los mensajes ordenados por fecha
             List<Mensaje> mensajes = mensajeRepository.findByChatIdOrderByFechaEnvioAsc(chatId);
 
             ArrayNode arrayMensajes = mapper.createArrayNode();
@@ -535,7 +491,7 @@ public class ServerServices {
                 ObjectNode msgJson = mapper.createObjectNode();
                 msgJson.put("id", m.getId());
                 msgJson.put("senderId", m.getSender().getId());
-                msgJson.put("senderName", m.getSender().getNombre()); // O el campo nombre que uses
+                msgJson.put("senderName", m.getSender().getNombre());
                 msgJson.put("content", m.getContenidoTexto());
                 msgJson.put("type", m.getTipo().toString());
                 msgJson.put("timestamp", m.getFechaEnvio().toString());
@@ -599,7 +555,6 @@ public class ServerServices {
             usuario.setEmail(nuevoEmail);
             usuario.setBio(nuevaBio);
 
-            // 🔥 HASHING AL ACTUALIZAR: Protegemos la nueva contraseña
             if (nuevaPassword != null && !nuevaPassword.isEmpty()) {
                 String nuevoHash = BCrypt.hashpw(nuevaPassword, BCrypt.gensalt());
                 usuario.setContraseña(nuevoHash);

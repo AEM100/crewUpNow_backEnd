@@ -51,17 +51,14 @@ public class Usuario {
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Asistencia> asistencias = new HashSet<>();
 
-    // Getter y Setter para asistencias
     public Set<Asistencia> getAsistencias() { return asistencias; }
     public void setAsistencias(Set<Asistencia> asistencias) { this.asistencias = asistencias; }
-    // Sus Getters y Setters
     public Boolean getIsAdmin() { return isAdmin; }
     public void setIsAdmin(Boolean isAdmin) { this.isAdmin = isAdmin; }
     public String getFotoBase64() { return fotoBase64; }
     public void setFotoBase64(String fotoBase64) { this.fotoBase64 = fotoBase64; }
     public Boolean getIsBanned() { return isBanned; }
     public void setIsBanned(Boolean isBanned) { this.isBanned = isBanned; }
-    // 2. Añade sus correspondientes Getter y Setter al final de la clase:
     public String getBio() {
         return bio;
     }

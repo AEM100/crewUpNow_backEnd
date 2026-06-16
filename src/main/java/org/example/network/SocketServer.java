@@ -19,7 +19,7 @@ public class SocketServer {
     private final ChatRepository chatRepository;
     private final MensajeRepository mensajeRepository;
     private final UsuarioChatRepository usuarioChatRepository;
-    private final AsistenciaRepository asistenciaRepository; // 🔥 1. Declara el campo
+    private final AsistenciaRepository asistenciaRepository;
 
     public SocketServer(
             UsuarioRepository usuarioRepository,
@@ -27,39 +27,35 @@ public class SocketServer {
             ChatRepository chatRepository,
             MensajeRepository mensajeRepository,
             UsuarioChatRepository usuarioChatRepository,
-            AsistenciaRepository asistenciaRepository // 🔥 2. Añádelo al constructor
+            AsistenciaRepository asistenciaRepository
     ) {
         this.usuarioRepository = usuarioRepository;
         this.eventoRepository = eventoRepository;
         this.chatRepository = chatRepository;
         this.mensajeRepository = mensajeRepository;
         this.usuarioChatRepository = usuarioChatRepository;
-        this.asistenciaRepository = asistenciaRepository; // 🔥 3. Asigna el valor
+        this.asistenciaRepository = asistenciaRepository;
     }
 
     public void start() {
-        // Creamos la instancia de tu servicio pasándole el repositorio que recibimos
         ServerServices serverServices = new ServerServices(
                 usuarioRepository,
                 eventoRepository,
                 chatRepository,
                 mensajeRepository,
                 usuarioChatRepository,
-                asistenciaRepository // <--- ESTO ES LO QUE FALTA
+                asistenciaRepository
         );
         new Thread(() -> {
             try (ServerSocket serverSocket = new ServerSocket(9000)) {
                 System.out.println("=== Servidor de Sockets TCP escuchando en el puerto 9000 ===");
 
                 while (true) {
-                    // Se detiene aquí hasta que Android intente conectarse
                     Socket client = serverSocket.accept();
                     System.out.println("¡Conexión aceptada desde " + client.getInetAddress() + "!");
 
-                    // Creamos el handler para este cliente específico
                     ClientHandler handler = new ClientHandler(client, serverServices);
 
-                    // Lo lanzamos en un hilo independiente
                     new Thread(handler).start();
                 }
 

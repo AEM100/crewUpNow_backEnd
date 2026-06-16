@@ -25,5 +25,4 @@ public class UserLike {
 
     private LocalDateTime fecha;
 
-    // Generar Getters, Setters y Constructores
 }

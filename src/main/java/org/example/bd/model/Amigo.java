@@ -20,5 +20,4 @@ public class Amigo {
     @Column(name = "fecha_amistad")
     private LocalDateTime fechaAmistad;
 
-    // Generar Getters y Setters
 }

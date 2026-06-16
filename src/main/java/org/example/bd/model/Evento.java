@@ -30,7 +30,6 @@ public class Evento {
     @JoinColumn(name = "chat_id", referencedColumnName = "id")
     private Chat chat;
 
-    // Su Getter y Setter
     public Chat getChat() { return chat; }
     public void setChat(Chat chat) { this.chat = chat; }
     @Column(length = 100, nullable = false)
@@ -45,20 +44,17 @@ public class Evento {
     @Column(length = 150)
     private String ubicacion;
 
-    // 1. Modifica la relación con el Creador
-    @ManyToOne(fetch = FetchType.EAGER) // 🔥 Cambiado a EAGER
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "creador_id")
     private Usuario creador;
 
     @OneToMany(mappedBy = "evento", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Asistencia> asistencias = new HashSet<>();
 
-    // Getter para contar participantes fácilmente
     public int getParticipantsCount() {
         return asistencias.size();
     }
 
-    // Generar Getters, Setters y Constructores
 
     public Integer getId() {
         return id;

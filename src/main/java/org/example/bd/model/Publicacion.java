@@ -33,5 +33,4 @@ public class Publicacion {
 
     private LocalDateTime fecha;
 
-    // Generar Getters, Setters y Constructores
 }

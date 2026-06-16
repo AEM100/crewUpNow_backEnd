@@ -39,7 +39,6 @@ public class Chat {
     private LocalDateTime fechaCreacion;
 
 
-    // Generar Getters, Setters y Constructores
 
     public Integer getId() {
         return id;

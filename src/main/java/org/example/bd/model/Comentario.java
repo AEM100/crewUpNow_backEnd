@@ -31,5 +31,4 @@ public class Comentario {
     @Column(length = 200)
     private String texto;
 
-    // Generar Getters, Setters y Constructores
 }
