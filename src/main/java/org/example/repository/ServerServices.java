@@ -62,7 +62,8 @@ public class ServerServices {
             nuevoUsuario.setEmail(email);
 
             String passwordHash = BCrypt.hashpw(passwordPlano, BCrypt.gensalt());
-            nuevoUsuario.setContraseña(passwordHash);
+            System.out.println(passwordHash);
+            nuevoUsuario.setContrasena(passwordHash);
 
             nuevoUsuario.setBio("");
             nuevoUsuario.setFotoBase64("");
@@ -114,9 +115,9 @@ public class ServerServices {
                 return response;
             }
 
-            if (!BCrypt.checkpw(passwordIntentado, usuario.getContraseña())) {
+            if (!BCrypt.checkpw(passwordIntentado, usuario.getContrasena())) {
                 response.put("status", "ERROR");
-                response.put("message", "Contraseña incorrecta.");
+                response.put("message", "Contrasena incorrecta.");
                 return response;
             }
 
@@ -557,7 +558,7 @@ public class ServerServices {
 
             if (nuevaPassword != null && !nuevaPassword.isEmpty()) {
                 String nuevoHash = BCrypt.hashpw(nuevaPassword, BCrypt.gensalt());
-                usuario.setContraseña(nuevoHash);
+                usuario.setContrasena(nuevoHash);
             }
 
             if (nuevaFotoBase64 != null && !nuevaFotoBase64.isEmpty()) {

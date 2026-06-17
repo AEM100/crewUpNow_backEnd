@@ -23,7 +23,7 @@ public class Usuario {
     private String fotoBase64;
 
     @Column(length = 255)
-    private String contraseña;
+    private String contrasena;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo_cuenta")
@@ -70,8 +70,8 @@ public class Usuario {
         return id;
     }
 
-    public String getContraseña() {
-        return contraseña;
+    public String getContrasena() {
+        return contrasena;
     }
 
     public String getNombre() {
@@ -95,8 +95,8 @@ public class Usuario {
         this.email = email;
     }
 
-    public void setContraseña(String contraseña) {
-        this.contraseña = contraseña;
+    public void setContrasena(String contrasena) {
+        this.contrasena = contrasena;
     }
 
     public void setTipoCuenta(TipoCuenta tipoCuenta) {
